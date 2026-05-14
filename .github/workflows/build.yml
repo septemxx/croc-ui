@@ -121,7 +121,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: release/*
+          files: |
+            release/**/*.dmg
+            release/**/*.msi
+            release/**/*.deb
           draft: false
           prerelease: false
           generate_release_notes: true
