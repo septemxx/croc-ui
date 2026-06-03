@@ -29,6 +29,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Ad-hoc codesign the .app bundle
+        run: |
+          APP_PATH="src-tauri/target/release/bundle/macos/Croc UI.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "App bundle not found at: $APP_PATH"
+            ls -la src-tauri/target/release/bundle/macos/ || true
+            exit 1
+          fi
+          # 先移除旧签名，再做 ad-hoc 签名
+          codesign --remove-signature "$APP_PATH" 2>/dev/null || true
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify --verbose=2 "$APP_PATH"
+          echo "Signed successfully: $APP_PATH"
+
+      - name: Re-create DMG with signed app
+        run: |
+          # 找到已存在的 DMG 并重新打包（用签名后的 .app）
+          APP_PATH="src-tauri/target/release/bundle/macos/Croc UI.app"
+          DMG_DIR="src-tauri/target/release/bundle/dmg"
+          # 删除旧的 DMG
+          rm -f "$DMG_DIR"/*.dmg
+          # 重新调用 tauri 打包（此时 .app 已经是签好名的）
+          npm run tauri bundle -- --bundles dmg
+          ls -la "$DMG_DIR" || true
+
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:

@@ -34,6 +34,31 @@ brew install croc-ui
 # 发布地址: https://github.com/septemxx/croc-ui/releases
 ```
 
+> ⚠️ **首次打开提示"已损坏"或"无法验证开发者"？**
+>
+> 由于本项目采用 **ad-hoc 签名**（非 Apple Developer ID 签名），macOS Gatekeeper 在首次打开时会拦截。请按以下任一方法处理：
+>
+> **方法 A：终端命令（推荐，一次解决）**
+>
+> ```bash
+> # 移除下载的隔离属性（注意路径根据实际调整）
+> xattr -cr "/Applications/Croc UI.app"
+> ```
+>
+> **方法 B：右键打开**
+>
+> 1. 在 Finder 中找到 `Croc UI.app`
+> 2. **右键** 点击 → 选择"打开"
+> 3. 在弹出的对话框中点击"打开"
+>
+> **方法 C：系统设置**
+>
+> 1. 尝试打开应用失败后
+> 2. 打开"系统设置" → "隐私与安全性"
+> 3. 向下滚动找到被阻止的应用，点击"仍要打开"
+>
+> 之后即可正常双击打开。
+
 ### Windows
 
 ```bash
