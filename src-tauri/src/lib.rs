@@ -4,6 +4,7 @@ use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::panic;
 use tauri::{State, Emitter};
 use tokio::sync::Mutex as TokioMutex;
 
@@ -311,7 +312,33 @@ fn extract_file_name(line: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    
+
+    // 安装 panic hook，把 panic 信息写入日志文件，方便排查崩溃
+    let default_panic = panic::take_hook();
+    panic::set_hook(Box::new(move |panic_info| {
+        let msg = format!(
+            "[PANIC] {}\nBacktrace:\n{:?}\n",
+            panic_info,
+            std::backtrace::Backtrace::capture()
+        );
+        // 输出到 stderr
+        eprintln!("{}", msg);
+        // 写入用户主目录下的日志文件
+        if let Some(home) = std::env::var_os("HOME") {
+            let log_path = std::path::PathBuf::from(home).join("croc-ui-panic.log");
+            let _ = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .write(true)
+                .open(&log_path)
+                .and_then(|mut f| {
+                    use std::io::Write;
+                    f.write_all(msg.as_bytes())
+                });
+        }
+        default_panic(panic_info);
+    }));
+
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
