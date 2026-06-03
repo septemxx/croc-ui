@@ -119,14 +119,9 @@ jobs:
         run: ls -laR release/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: |
-            release/**/*.dmg
-            release/**/*.msi
-            release/**/*.deb
+          artifacts: "release/*.dmg,release/*.msi,release/*.deb"
           draft: false
           prerelease: false
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
